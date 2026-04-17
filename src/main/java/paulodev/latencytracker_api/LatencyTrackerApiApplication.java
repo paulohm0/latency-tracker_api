@@ -1,0 +1,13 @@
+package paulodev.latencytracker_api;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class LatencyTrackerApiApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(LatencyTrackerApiApplication.class, args);
+    }
+
+}
