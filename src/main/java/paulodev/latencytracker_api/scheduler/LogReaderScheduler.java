@@ -7,24 +7,39 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import paulodev.latencytracker_api.service.LogAuditService;
 
+import java.io.File;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class LogReaderScheduler {
 
-    @Value("${logs.file.path}")
-    private String filePath;
+    @Value("${backlog.folder.path}")
+    private String folderPath;
 
     private final LogAuditService logAuditService;
 
-    // Padrão Cron: Segundo(0) Minuto(0) Hora(7) Dia(*) Mês(*) DiaDaSemana(*)
     @Scheduled(cron = "${scheduler.cron}")
     public void runAudit() {
-        log.info("Leitura de Logs iniciada!");
+
+        log.info("Procurando arquivo de logs...");
+        File folder = new File(folderPath);
+        File[] listFiles = folder.listFiles();
+
+        if (listFiles == null || listFiles.length == 0) {
+            log.warn("Arquivo de logs não encontrado.");
+            return;
+        }
+
+        File arquivoParaProcessar = listFiles[0];
+        String filePath = arquivoParaProcessar.getAbsolutePath();
+
+        log.info("Arquivo de logs encontrado: " + arquivoParaProcessar.getName());
+
         try {
             logAuditService.processAudit(filePath);
         } catch (Exception e) {
-            log.info("Falha ao executar a leitura de logs!");
+            log.error("Falha ao executar a leitura do arquivo: " + arquivoParaProcessar.getName(), e);
         }
     }
 

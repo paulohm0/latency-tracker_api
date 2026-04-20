@@ -6,6 +6,9 @@ import paulodev.latencytracker_api.dto.AuditReportDTO;
 import paulodev.latencytracker_api.dto.BottleneckDTO;
 import paulodev.latencytracker_api.dto.LogEntryDTO;
 import paulodev.latencytracker_api.enums.BottleneckCriticalityLevel;
+import paulodev.latencytracker_api.reader.LogFileReader;
+import paulodev.latencytracker_api.reader.factory.LogFileReaderFactory;
+import paulodev.latencytracker_api.reader.impl.XlsxLogFileReader;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,13 +19,14 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class LogAuditService {
 
-    private final LogReaderService logReaderService;
+    private final LogFileReaderFactory logFileReaderFactory;
 
     private volatile List<BottleneckDTO> cachedBottlenecks = new ArrayList<>();
     private volatile int totalLogsProcessed = 0;
 
     public void processAudit(String filePath) {
-        List<LogEntryDTO> rawLogs = logReaderService.readLogsFromFile(filePath);
+        LogFileReader reader = logFileReaderFactory.getReader(filePath);
+        List<LogEntryDTO> rawLogs = reader.readLogs(filePath);
         List<BottleneckDTO> processedBottlenecks = new ArrayList<>();
 
         for (LogEntryDTO log : rawLogs) {

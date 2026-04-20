@@ -1,27 +1,29 @@
-package paulodev.latencytracker_api.service;
+package paulodev.latencytracker_api.reader.impl;
 
 import com.github.pjfanning.xlsx.StreamingReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import paulodev.latencytracker_api.dto.LogEntryDTO;
+import paulodev.latencytracker_api.reader.LogFileReader;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Component
 @Slf4j
-public class LogReaderService {
+public class XlsxLogFileReader implements LogFileReader {
 
     private static final int COLUMN_ENDPOINT = 2;
     private static final int COLUMN_SERVICE = 4;
     private static final int COLUMN_RESPONSE_TIME_MS = 5;
 
-    public List<LogEntryDTO> readLogsFromFile(String filePath) {
+    @Override
+    public List<LogEntryDTO> readLogs(String filePath) {
         List<LogEntryDTO> logEntries = new ArrayList<>();
 
         try (FileInputStream file = new FileInputStream(new File(filePath));
@@ -38,14 +40,17 @@ public class LogReaderService {
             }
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue;
+                try {
+                    if (row.getRowNum() == 0) continue;
+                    String endpoint = row.getCell(COLUMN_ENDPOINT).getStringCellValue();
+                    String serviceName = row.getCell(COLUMN_SERVICE).getStringCellValue();
+                    int responseTimeMs = (int) row.getCell(COLUMN_RESPONSE_TIME_MS).getNumericCellValue();
 
-                String endpoint = row.getCell(COLUMN_ENDPOINT).getStringCellValue();
-                String serviceName = row.getCell(COLUMN_SERVICE).getStringCellValue();
-                int responseTimeMs = (int) row.getCell(COLUMN_RESPONSE_TIME_MS).getNumericCellValue();
-
-                LogEntryDTO logEntry = new LogEntryDTO(endpoint, serviceName, responseTimeMs);
-                logEntries.add(logEntry);
+                    LogEntryDTO logEntry = new LogEntryDTO(endpoint, serviceName, responseTimeMs);
+                    logEntries.add(logEntry);
+                } catch (Exception e) {
+                    log.warn("Falha no processamento dos dados da linha da linha "+ row.getRowNum());
+                }
             }
             log.info("Arquivo de logs lido com éxito");
         } catch (Exception e) {
