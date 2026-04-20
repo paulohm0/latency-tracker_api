@@ -17,6 +17,10 @@ import java.util.List;
 @Slf4j
 public class LogReaderService {
 
+    private static final int COLUMN_ENDPOINT = 2;
+    private static final int COLUMN_SERVICE = 4;
+    private static final int COLUMN_RESPONSE_TIME_MS = 5;
+
     public List<LogEntryDTO> readLogsFromFile(String filePath) {
         List<LogEntryDTO> logEntries = new ArrayList<>();
 
@@ -29,23 +33,23 @@ public class LogReaderService {
             Sheet sheet = workbook.getSheetAt(0);
 
             if (sheet == null) {
-                log.info("Erro ao ler arquivo: Aba de logs não localizada");
+                log.error("Erro ao ler arquivo: Aba de logs não localizada");
                 return logEntries;
             }
 
             for (Row row : sheet) {
                 if (row.getRowNum() == 0) continue;
 
-                String endpoint = row.getCell(2).getStringCellValue();
-                String serviceName = row.getCell(4).getStringCellValue();
-                int responseTimeMs = (int) row.getCell(5).getNumericCellValue();
+                String endpoint = row.getCell(COLUMN_ENDPOINT).getStringCellValue();
+                String serviceName = row.getCell(COLUMN_SERVICE).getStringCellValue();
+                int responseTimeMs = (int) row.getCell(COLUMN_RESPONSE_TIME_MS).getNumericCellValue();
 
                 LogEntryDTO logEntry = new LogEntryDTO(endpoint, serviceName, responseTimeMs);
                 logEntries.add(logEntry);
             }
             log.info("Arquivo de logs lido com éxito");
         } catch (Exception e) {
-            log.info("Erro ao processar o arquivo Excel: " + e.getMessage());
+            log.error("Erro ao processar o arquivo Excel: " + e.getMessage());
         }
         return logEntries;
     }

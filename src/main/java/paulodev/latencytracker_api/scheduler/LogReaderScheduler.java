@@ -18,7 +18,7 @@ public class LogReaderScheduler {
     private final LogAuditService logAuditService;
 
     // Padrão Cron: Segundo(0) Minuto(0) Hora(7) Dia(*) Mês(*) DiaDaSemana(*)
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "${scheduler.cron}")
     public void runAudit() {
         log.info("Leitura de Logs iniciada!");
         try {
