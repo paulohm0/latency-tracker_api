@@ -20,7 +20,11 @@ public class LogAuditController {
     private final LogAuditService logAuditService;
 
     @GetMapping("/audit")
-    public AuditReportDTO getLogsBottlenecks(@RequestParam(required = false) BottleneckCriticalityLevel filter) {
-        return logAuditService.getCachedBottlenecks(filter);
+    public AuditReportDTO getLogsBottlenecks(
+            @RequestParam(required = false) BottleneckCriticalityLevel filter,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size)
+    {
+        return logAuditService.getCachedBottlenecks(filter, page, size);
     }
 }

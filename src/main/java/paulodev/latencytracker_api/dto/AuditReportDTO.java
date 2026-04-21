@@ -12,5 +12,6 @@ public record AuditReportDTO(
         int maxLatencyMs,
         String slowestEndpoint,
         String slowestService,
+        PaginationDTO paginationDTO,
         List<BottleneckDTO> bottleneckList
 ) { }

@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 import paulodev.latencytracker_api.dto.AuditReportDTO;
 import paulodev.latencytracker_api.dto.BottleneckDTO;
 import paulodev.latencytracker_api.dto.LogEntryDTO;
+import paulodev.latencytracker_api.dto.PaginationDTO;
 import paulodev.latencytracker_api.enums.BottleneckCriticalityLevel;
 import paulodev.latencytracker_api.reader.LogFileReader;
 import paulodev.latencytracker_api.reader.factory.LogFileReaderFactory;
-import paulodev.latencytracker_api.reader.impl.XlsxLogFileReader;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -43,7 +43,7 @@ public class LogAuditService {
 
     }
 
-    public AuditReportDTO getCachedBottlenecks(BottleneckCriticalityLevel filter) {
+    public AuditReportDTO getCachedBottlenecks(BottleneckCriticalityLevel filter, int page, int size) {
 
         Stream<BottleneckDTO> stream = cachedBottlenecks.stream();
 
@@ -60,6 +60,11 @@ public class LogAuditService {
         String slowestEndpoint = (worstBottleneck != null) ? worstBottleneck.endpoint() : null;
         String slowestService = (worstBottleneck != null) ? worstBottleneck.serviceName() : null;
 
+        // paginação
+        int from = page * size;
+        int to = Math.min(from + size, processedList.size());
+        int totalPages = (int) Math.ceil((double) processedList.size() / size);
+
         return new AuditReportDTO(
                 totalLogsProcessed,
                 (filter != null) ? processedList.size() : null,
@@ -67,7 +72,8 @@ public class LogAuditService {
                 maxLatencyMs,
                 slowestEndpoint,
                 slowestService,
-                processedList
+                new PaginationDTO(totalPages,page,size),
+                from >= processedList.size() ? new ArrayList<>() :processedList.subList(from,to)
         );
     }
 }
